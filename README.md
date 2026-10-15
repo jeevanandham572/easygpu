@@ -4,6 +4,20 @@ Portable, Docker Compose-based GPU inference stack.
 
 Includes Ollama (GPU inference), Open WebUI (chat), LiteLLM (authenticated OpenAI-compatible API), and optional Caddy HTTPS.
 
+## Windows one-click launcher
+
+Download [easygpu-windows.bat](easygpu-windows.bat) from this repository and double-click it on Windows 10/11 (OpenSSH Client required).
+
+It prompts for the rental host, SSH port and username (defaults: `relay.gridshare.in`, `30001`, `root`). Use:
+- **1** for first-time install/repair (SSH, Git clone/pull, native installer, tunnel).
+- **2** for subsequent starts (native services, tunnel and browser).
+- **3** to open the private SSH tunnel only.
+- **4** to check remote status.
+
+The tunnel maps your Windows `http://127.0.0.1:8080` to remote Open WebUI and `http://127.0.0.1:4000/v1` to the authenticated LiteLLM API. Leave the separate tunnel terminal open. The SSH password may be requested once for setup and again for the tunnel; SSH keys avoid repeat prompts. For a new GPU rental, update the hostname and SSH port when prompted. Cloning a private GitHub repository on a *new* GPU host requires GitHub authentication on that host; prefer a fine-grained read-only token or SSH deploy key.
+
+The launcher does not make the API publicly accessible; it only forwards connections to your Windows PC. Local port conflicts will prevent the tunnel from starting. No remote passwords or API keys are stored by the launcher. The GPU server's own `.env` retains the key.
+
 ## Native installation for GridShare / rented GPU containers (no Docker)
 
 If `docker info` cannot connect to a Docker daemon, use **native mode**:
