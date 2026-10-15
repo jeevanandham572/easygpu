@@ -1,0 +1,64 @@
+name: gpu-ai-stack
+services:
+  ollama:
+    image: ollama/ollama:${OLLAMA_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-5m}
+    volumes:
+      - ./data/ollama:/root/.ollama
+    expose:
+      - "11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  litellm:
+    image: ${LITELLM_IMAGE:-docker.litellm.ai/berriai/litellm:main-stable}
+    restart: unless-stopped
+    command: ["--config", "/app/config.yaml", "--port", "4000", "--host", "0.0.0.0"]
+    environment:
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?Run bash install.sh}
+    volumes:
+      - ./config/litellm.yaml:/app/config.yaml:ro
+    ports:
+      - "127.0.0.1:${API_PORT:-4000}:4000"
+    depends_on:
+      - ollama
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:${WEBUI_TAG:-main}
+    restart: unless-stopped
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_AUTH: "True"
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:?Run bash install.sh}
+      ENABLE_SIGNUP: "True"
+    ports:
+      - "127.0.0.1:${WEBUI_PORT:-3000}:8080"
+    volumes:
+      - ./data/open-webui:/app/backend/data
+    depends_on:
+      - ollama
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    profiles: ["public"]
+    environment:
+      DOMAIN: ${DOMAIN:?Provide --domain when using public profile}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./data/caddy_data:/data
+      - ./data/caddy_config:/config
+    depends_on:
+      - litellm
+      - open-webui
