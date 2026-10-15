@@ -1,0 +1,10 @@
+{$DOMAIN} {
+  encode zstd gzip
+  @api path /v1 /v1/*
+  handle @api {
+    reverse_proxy litellm:4000
+  }
+  handle {
+    reverse_proxy open-webui:8080
+  }
+}
