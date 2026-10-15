@@ -4,6 +4,37 @@ Portable, Docker Compose-based GPU inference stack.
 
 Includes Ollama (GPU inference), Open WebUI (chat), LiteLLM (authenticated OpenAI-compatible API), and optional Caddy HTTPS.
 
+## Native installation for GridShare / rented GPU containers (no Docker)
+
+If `docker info` cannot connect to a Docker daemon, use **native mode**:
+
+```bash
+cd ~/easygpu
+git pull origin main
+bash install.sh --native
+```
+
+This installs Python services in `data/native/venv`, reuses an existing Ollama installation, generates/reuses the `.env` API key, and serves all services on localhost by default. Existing Ollama models are reused; the installer will pull missing default models. Python 3.11/3.12 recommended; ensure `python3-venv` is installed. The host/container must allow Python packages and locally launched processes.
+
+Check or restart services:
+
+```bash
+bash scripts/native.sh status
+bash scripts/native.sh start
+bash scripts/native.sh stop
+tail -n 100 data/native/logs/litellm.log
+```
+
+From **Windows PowerShell**, forward the two UI/API ports:
+
+```powershell
+ssh -N -L 4000:127.0.0.1:4000 -L 8080:127.0.0.1:8080 -p 30001 root@relay.gridshare.in
+```
+
+Then open Open WebUI at `http://127.0.0.1:8080`, and connect VS Code / OpenAI SDK to `http://127.0.0.1:4000/v1` with the key in `.env`. In native mode **WebUI is on 8080, not 3000**. Do not expose 4000 or 11434 publicly without access controls, TLS and rate limiting.
+
+Note: Docker mode and native mode are mutually alternative deployments; if you have existing services on ports 8080/4000, stop them before starting native mode. This has not yet been verified on the specific GridShare container; test with `bash scripts/native.sh status` and review logs.
+
 ## Requirements
 
 A Linux NVIDIA GPU VM with Docker daemon access, Docker Compose v2, NVIDIA Container Toolkit, curl, and openssl. **Container-only GPU rentals may not support Docker-in-Docker.** This installer cannot bypass that restriction.
