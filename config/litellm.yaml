@@ -1,0 +1,17 @@
+model_list:
+  - model_name: coding-ai
+    litellm_params:
+      model: ollama_chat/qwen3.5:9b
+      api_base: http://ollama:11434
+      timeout: 600
+  - model_name: uncensored-ai
+    litellm_params:
+      model: ollama_chat/huihui_ai/qwen3-abliterated:8b
+      api_base: http://ollama:11434
+      timeout: 600
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+litellm_settings:
+  drop_params: true
