@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# Container-friendly native mode (no Docker daemon required).
+if [[ "${1:-}" == "--native" ]]; then
+  shift
+  exec bash "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/scripts/native.sh" install "$@"
+fi
+
 set -Eeuo pipefail
 cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 
